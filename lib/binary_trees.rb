@@ -1,27 +1,33 @@
+require_relative "node.rb"
+
 class Tree
-  def initialize
-    @root = build_tree
+  attr_accessor :root, :data
+
+  def initialize(array)
+    @data = array.sort.uniq
+    @root = build_tree(data)
   end
 
   def build_tree(array)
-    sorted_array = array.sort.uniq
-    mid = sorted_array.length / 2
-    root_return = Node.new(sorted_array[mid])
+    return nil if array.empty?
+    mid = (array.size - 1) / 2
+    root_return = Node.new(array[mid])
 
-    root_return.left = build_tree(sorted_array[0...mid])
-    root_return.right = build_tree(sorted_array[mid + 1..sorted_array.length])
+    root_return.left = build_tree(array[0...mid])
+    root_return.right = build_tree(array[(mid + 1)..-1])
     root_return
   end
 
-  def insert(value, root = @root)
-    return Node.new(value) if @root.nil?
+  def insert(value, node = @root)
+    return @root = Node.new(value) if @root.nil?
+    return Node.new(value) if node.nil?
 
-    if root.data > value
-      root.left = insert(value, root.left)
-    elsif root.data < value
-      root.right = insert(value, root.right)
+    if node.value > value
+      node.left = insert(value, node.left)
+    elsif node.value < value
+      node.right = insert(value, node.right)
     end
-    root
+    node
   end
 
   def delete(value, root = @root)
@@ -66,6 +72,7 @@ class Tree
       queue.push(root.right) unless root.right.nil?
       break if queue.empty?
     end
+    arr
   end
 
   def inorder(root = @root, res = [], &block)
@@ -73,7 +80,7 @@ class Tree
     if block_given?
       yield(root)
     else
-      res.push(root.data)
+      res.push(root.value)
     end
     inorder(root.right, res) if root.right
     res
@@ -83,7 +90,7 @@ class Tree
     if block_given?
       yield(root)
     else
-      res.push(root.data)
+      res.push(root.value)
     end
     preorder(root.left, res) if root.left
     preorder(root.right, res) if root.right
@@ -96,7 +103,7 @@ class Tree
     if block_given?
       yield(root)
     else
-      res.push(root.data)
+      res.push(root.value)
     end
     res
   end
@@ -132,5 +139,11 @@ class Tree
       values_arr = inorder
       @root = build_tree(values_arr)
     end
+  end
+
+  def pretty_print(node = @root, prefix = "", is_left = true)
+    pretty_print(node.right, "#{prefix}#{is_left ? "│   " : "    "}", false) if node.right
+    puts "#{prefix}#{is_left ? "└── " : "┌── "}#{node.value}"
+    pretty_print(node.left, "#{prefix}#{is_left ? "    " : "│   "}", true) if node.left
   end
 end
